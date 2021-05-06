@@ -1,0 +1,98 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TypeScript App</title>
+    <link rel="stylesheet" href="~/css/site.css">
+    <script src="~/lib/jquery/dist/jquery.js" type="text/javascript"></script>
+    <script src="~/js/axios.min.js"></script>
+    <script>
+        function GetExpenseCategories() {
+            axios.get("/Values/GetExpenseCategories")
+                .then(function (response) {
+                    if (response.data.isSuccessful) {
+                        var categories = response.data.data;
+                        $("#category").html('');
+                        for (var i = 0; i < categories.length; i++) {
+                            var category = categories[i];
+                            $("#category").append('<option value="' + category.expenseCategoryId + '">' + category.expenseCategoryName+'</option>');
+                        }
+                    }
+                })
+                .catch(function () {
+                    alert("An error occured while fetching expense categories.");
+                });
+        }
+        $(document).ready(function () {
+            GetExpenseCategories();
+
+            $("#addbtn").click(function () {
+                var expenseDate = $("#date").val();
+                var expenseAmount = $("#amount").val();
+                var expenseCategory = $("#category").val();
+                var expenseDescription = $("#details").val();
+
+                axios.post("/Values/CreateExpenses", {
+                    "ExpenseDate": expenseDate,
+                    "ExpenseAmount": parseInt(expenseAmount),
+                    "ExpenseCategoryId": parseInt(expenseCategory),
+                    "ExpenseDescription": expenseDescription
+                })
+                    .then(res => {
+                        alert(res.data.message);
+                    })
+                    .catch(error => console.log(error));
+            });
+        });
+    </script>
+    <script type="module" src="@Url.Content("~/js/index.js")"></script>
+</head>
+<body>
+
+    <div class="wrapper">
+        <h1>Finance Logger</h1>
+
+        <!-- output list -->
+        <ul class="item-list" id="item-list">
+        </ul>
+    </div>
+
+    <footer>
+        <form class="new-item-form" id="inputform">
+            <div class="field">
+                <label>Date:</label>
+                <input type="date" id="date">
+            </div>
+            <div class="field">
+                <label>Category:</label>
+                <select id="category"> </select>
+            </div>
+            <div class="field">
+                <label>Details:</label>
+                <input type="text" id="details">
+            </div>
+            <div class="field">
+                <label>Amount (GH₵):</label>
+                <input type="number" id="amount">
+            </div>
+            <button type="submit" id="addbtn">Add</button>
+        </form>
+        <h3> Calculate total expenses </h3>
+        <form class="new-item-form" id="calcform">
+            <div class="field">
+                <label>Start Date:</label>
+                <input type="date" id="StartDate">
+            </div>
+            <div class="field">
+                <label>End Date:</label>
+                <input type="date" id="EndDate">
+            </div>
+            <button>Calculate</button>
+        </form>
+    </footer>
+</body>
+</html>
